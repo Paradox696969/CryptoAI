@@ -24,25 +24,6 @@ suggest = '\033[93m'
 error = '\033[91m'
 endc = '\033[0m'
 
-# Creating singular Crypto Data files ----------------------------------------->
-try:
-    file = open("./Model/CryptoModelData/CryptoDaily.csv", "r")
-    file.close()
-    file = open("./Model/CryptoModelData/CryptoHourly.csv", "r")
-    file.close()
-    file = open("./Model/CryptoModelData/CryptoMinutely.csv", "r")
-    file.close()
-except:
-    file = open("./Model/CryptoModelData/CryptoDaily.csv", "w")
-    file.write("Unix Timestamp,Date,Symbol,Open,High,Low,Close,Volume BTC,Platform,CryptoCurrency\n")
-    file.close()
-    file = open("./Model/CryptoModelData/CryptoHourly.csv", "w")
-    file.write("Unix Timestamp,Date,Symbol,Open,High,Low,Close,Volume BTC,Platform,CryptoCurrency\n")
-    file.close()
-    file = open("./Model/CryptoModelData/CryptoMinutely.csv", "w")
-    file.write("Unix Timestamp,Date,Symbol,Open,High,Low,Close,Volume BTC,Platform,CryptoCurrency\n")
-    file.close()
-
 # loops through all .csv files in the CryptoData directory -------------------->
 for filename in os.listdir(directory):
     temp_list = filename.split("_")
@@ -51,21 +32,23 @@ for filename in os.listdir(directory):
     f["crypto"] = temp_list[1]
 
     # Checking Time Frame - used for checking which file data is appended to -->
-    if not temp_list[2].endswith(".csv"):
-        if temp_list[2] in ["d", "day"]:
-            f["time_frame"] = "Daily"
-        elif temp_list[2] in ["hour", "h", "1h"]:
-            f["time_frame"] = "Hourly"
-        else:
-            f["time_frame"] = "Minutely"
-    else:
+    if temp_list[2].endswith(".csv"):
         temp_list[2] = temp_list[2][:-4]
-        if temp_list[2] in ["d", "day"]:
-            f["time_frame"] = "Daily"
-        elif temp_list[2] in ["hour", "h", "1h"]:
-            f["time_frame"] = "Hourly"
+
+    if temp_list[2] in ["d", "day", "daily"]:
+        f["time_frame"] = "Daily"
+    elif temp_list[2] in ["hour", "h", "1h", "1hr"]:
+        f["time_frame"] = "Hourly"
+    else:
+        f["time_frame"] = "Minutely"
+
+        if temp_list[2].lower() not in ['minutely', 'min', 'm', '1min', '1minute', 'minute']:
+            f["minute_year"] = temp_list[2]
         else:
-            f["time_frame"] = "Minutely"
+            f["minute_year"] = False
+
+    if f["time_frame"] != "Minutely":
+        continue
 
     # reads current .csv file ------------------------------------------------->
     df = pd.read_csv(f"{directory}/{filename}", low_memory=False)
@@ -117,4 +100,32 @@ for filename in os.listdir(directory):
     print(filename, f)
 
     # Writing new data to singular file ---------------------------------------->
-    df.to_csv(f"./Model/CryptoModelData/Crypto{f['time_frame']}.csv", index=False, mode="a", header=None)
+
+    if f["time_frame"] == "Minutely":
+        try:
+            try:
+                file_to_write = open(f"./Model/CryptoModelData/{f['time_frame']}/{f['platform']}_{f['crypto']}.csv", "w")
+                file_to_write.write("Unix Timestamp,Date,Symbol,Open,High,Low,Close,Volume,Platform,CryptoCurrency\n")
+                file_to_write.close()
+                df.to_csv(f"./Model/CryptoModelData/{f['time_frame']}/{f['platform']}_{f['crypto']}.csv", index=False, mode="a", header=None)
+            except FileExistsError:
+                pass
+        except:
+            try:
+                os.mkdir(f"./Model/CryptoModelData/{f['time_frame']}/")
+                file_to_write = open(f"./Model/CryptoModelData/{f['time_frame']}/{f['platform']}_{f['crypto']}.csv", "w")
+                file_to_write.write("Unix Timestamp,Date,Symbol,Open,High,Low,Close,Volume,Platform,CryptoCurrency\n")
+                file_to_write.close()
+                df.to_csv(f"./Model/CryptoModelData/{f['time_frame']}/{f['platform']}_{f['crypto']}.csv", index=False, mode="a", header=None)
+            except FileExistsError:
+                pass
+
+        df = pd.read_csv(f"./Model/CryptoModelData/{f['time_frame']}/{f['platform']}_{f['crypto']}.csv")
+
+        if df["Unix Timestamp"][0] > df["Unix Timestamp"][1]:
+            if not f["minute_year"]:
+                df = df.loc[::-1]
+            else:
+                if f["minute_year"] == "2021":
+                    df = df.loc[::-1]
+            df.to_csv(f"./Model/CryptoModelData/{f['time_frame']}/{f['platform']}_{f['crypto']}.csv", index=False)
