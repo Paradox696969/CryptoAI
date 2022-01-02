@@ -161,12 +161,12 @@ for filename in os.listdir("./CryptoModelData/Minutely/"):
     plt.clf()
 
     # save current model's losses --------------------------------------------->
-    os.mkdir(f"./CryptoModelData/SavedModels/{file_split[0]}/{file_split[1][:-4]}/Plots/")
+    os.mkdir(f"./CryptoModelData/Model_results/{file_split[0]}/{file_split[1][:-4]}_Plot/")
     plt.figure(figsize=(21, 13), dpi=200)
     plt.plot(history.history['loss'], label="Train")
     plt.plot(history.history['val_loss'], label="Validation")
     plt.legend()
-    with open(f"./CryptoModelData/SavedModels/{file_split[0]}/{file_split[1][:-4]}/Plots/lossGraph.png", "wb") as f:
+    with open(f"./CryptoModelData/Model_results/{file_split[0]}/{file_split[1][:-4]}_Plot/lossGraph.png", "wb") as f:
         plt.savefig(f)
 
     # clear plot -------------------------------------------------------------->
@@ -177,7 +177,7 @@ for filename in os.listdir("./CryptoModelData/Minutely/"):
     plt.plot(value_transformer.inverse_transform(test_labels.reshape(1, -1)).flatten(), label="True Value", marker=".")
     plt.plot(value_transformer.inverse_transform(result_for_plot.reshape(1, -1)).flatten(), label="Prediction", marker=".")
     plt.legend()
-    with open(f"./CryptoModelData/SavedModels/{file_split[0]}/{file_split[1][:-4]}/Plots/Pred-True.png", "wb") as f:
+    with open(f"./CryptoModelData/Model_results/{file_split[0]}/{file_split[1][:-4]}_Plot/Pred-True.png", "wb") as f:
         plt.savefig(f)
 
     # delete the directory where tuner trials are stored for next model ------->
