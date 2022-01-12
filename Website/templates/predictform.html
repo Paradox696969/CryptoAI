@@ -1,0 +1,13 @@
+{% extends "./Assets/layout.html" %}
+
+{% block content %}
+<form action="/prediction-module/prediction" method="POST">
+  <p>Market for Prediction(Currently Binance is only supported)<br><input type="text" name="market"></p>
+  <p>Crypto in format "CryptoUSDT"(Only BTCUSDT, ETHUSDT and LTCUSDT are supported)<br><input type="text" name="crypto"></p>
+  <p>Timestamps from in format(either Unix in milliseconds or in format yyyy:mm:dd:hr:min)<br><input type="text" name="timestamps0"></p>
+  <p>Timestamps to in format(either Unix in milliseconds or in format yyyy:mm:dd:hr:min)<br><input type="text" name="timestamps1"></p>
+  <p><br><input type="submit" value="Submit"></p>
+</form>
+
+<a href="{{ url_for('download', filename='Binance_BTCUSDT.csv')}}" download>Test</a><br /><br />
+{% endblock %}
